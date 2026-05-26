@@ -1,2 +1,9 @@
 node_modules/
 .env
+ml/models/
+ml/data/
+*.py
+test_email.js
+write_*.js
+client/.next/
+client/node_modules/
