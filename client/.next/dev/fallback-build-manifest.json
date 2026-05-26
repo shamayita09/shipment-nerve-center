@@ -1,0 +1,36 @@
+{
+  "pages": {
+    "/_app": [
+      "static/chunks/12o._next_dist_compiled_0aq.ouw._.js",
+      "static/chunks/12o._next_dist_shared_lib_10l~v~1._.js",
+      "static/chunks/12o._next_dist_client_11c6yiz._.js",
+      "static/chunks/12o._next_dist_0h0.ohk._.js",
+      "static/chunks/12o._react-dom_06x89qo._.js",
+      "static/chunks/12o._0q3wls9._.js",
+      "static/chunks/[root-of-the-server]__038yclm._.js",
+      "static/chunks/shipment-tracker_client_styles_globals_0ic8-8o.css",
+      "static/chunks/shipment-tracker_client_pages__app_07xvfw~._.js",
+      "static/chunks/turbopack-shipment-tracker_client_pages__app_0yas-fm._.js"
+    ],
+    "/_error": [
+      "static/chunks/12o._next_dist_compiled_0aq.ouw._.js",
+      "static/chunks/12o._next_dist_shared_lib_0cr4bvg._.js",
+      "static/chunks/12o._next_dist_client_11c6yiz._.js",
+      "static/chunks/12o._next_dist_0a9xsdd._.js",
+      "static/chunks/[next]_entry_page-loader_ts_0~0xpdp._.js",
+      "static/chunks/12o._react-dom_06x89qo._.js",
+      "static/chunks/12o._0klsli1._.js",
+      "static/chunks/[root-of-the-server]__0czao.y._.js",
+      "static/chunks/shipment-tracker_client_pages__error_07xvfw~._.js",
+      "static/chunks/turbopack-shipment-tracker_client_pages__error_0z17sg7._.js"
+    ]
+  },
+  "devFiles": [],
+  "polyfillFiles": [],
+  "lowPriorityFiles": [
+    "static/development/_buildManifest.js",
+    "static/development/_ssgManifest.js",
+    "static/development/_clientMiddlewareManifest.js"
+  ],
+  "rootMainFiles": []
+}
