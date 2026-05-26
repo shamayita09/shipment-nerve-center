@@ -7,7 +7,7 @@ require('./db')
 const app = express()
 
 app.use(cors({
-  origin: 'http://localhost:3000'
+  origin: ['http://localhost:3000', 'https://shipment-nerve-center.vercel.app']
 }))
 app.use(express.json())
 

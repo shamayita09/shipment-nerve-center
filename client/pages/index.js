@@ -9,8 +9,8 @@ import EventTimeline from '../components/EventTimeline'
 import StatsBar from '../components/StatsBar'
 import Header from '../components/Header'
 
-const socket = io('http://localhost:3001')
-const API = 'http://localhost:3001/api'
+const socket = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001')
+const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/api'
 
 export default function Home() {
   const [shipments, setShipments] = useState([])
