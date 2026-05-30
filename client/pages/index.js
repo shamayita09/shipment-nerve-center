@@ -1,13 +1,16 @@
-import SearchFilter from '../components/SearchFilter'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import io from 'socket.io-client'
 import Head from 'next/head'
+import dynamic from 'next/dynamic'
 import ShipmentTable from '../components/ShipmentTable'
 import AddShipmentForm from '../components/AddShipmentForm'
 import EventTimeline from '../components/EventTimeline'
 import StatsBar from '../components/StatsBar'
 import Header from '../components/Header'
+import SearchFilter from '../components/SearchFilter'
+import EditShipmentModal from '../components/EditShipmentModal'
+import DeleteConfirmModal from '../components/DeleteConfirmModal'
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001')
 const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/api'
@@ -18,8 +21,10 @@ export default function Home() {
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [adding, setAdding] = useState(false)
-  const [filtered, setFiltered] = useState(null)
   const [pulse, setPulse] = useState(false)
+  const [filtered, setFiltered] = useState(null)
+  const [editing, setEditing] = useState(null)
+  const [deleting, setDeleting] = useState(null)
 
   const fetchShipments = async () => {
     try {
@@ -55,30 +60,49 @@ export default function Home() {
     setAdding(false)
   }
 
+  const handleEdit = async (id, form) => {
+    await axios.put(API + '/shipments/' + id, form)
+    fetchShipments()
+    setEditing(null)
+    if (selected?.id === id) setSelected(null)
+  }
+
+  const handleDelete = async (id) => {
+    await axios.delete(API + '/shipments/' + id)
+    fetchShipments()
+    setDeleting(null)
+    if (selected?.id === id) setSelected(null)
+  }
+
   return (
     <>
-      <Head>
-        <title>Shipment Nerve Center</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </Head>
-      <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+      <Head><title>Shipment Nerve Center</title></Head>
+      <div style={{ minHeight: '100vh', background: '#0d1117' }}>
         <Header pulse={pulse} onAdd={() => setAdding(true)} />
         <main style={{ maxWidth: 1400, margin: '0 auto', padding: '28px 24px' }}>
           <StatsBar shipments={shipments} />
           {adding && <AddShipmentForm onAdd={handleAdd} onCancel={() => setAdding(false)} />}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)' }}>Active shipments</p>
-  <span style={{ fontSize: 12, color: 'var(--text-3)', background: 'var(--bg-3)', padding: '2px 10px', borderRadius: 20 }}>
-    {(filtered || shipments).length} of {shipments.length}
-  </span>
-</div>
-<SearchFilter shipments={shipments} onFilter={setFiltered} />
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#f0f6fc', margin: 0 }}>Active shipments</p>
+            <span style={{ fontSize: 12, color: '#8b949e', background: '#21262d', padding: '2px 10px', borderRadius: 20 }}>
+              {(filtered || shipments).length} of {shipments.length}
+            </span>
+          </div>
+          <SearchFilter shipments={shipments} onFilter={setFiltered} />
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-4)', fontSize: 13 }}>Loading shipments...</div>
+            <div style={{ textAlign: 'center', padding: '4rem', color: '#484f58', fontSize: 13 }}>Loading shipments...</div>
           ) : (
-            <ShipmentTable shipments={filtered || shipments} onSelect={handleSelect} selected={selected} />
+            <ShipmentTable
+              shipments={filtered || shipments}
+              onSelect={handleSelect}
+              selected={selected}
+              onEdit={setEditing}
+              onDelete={setDeleting}
+            />
           )}
           {selected && <EventTimeline shipment={selected} events={events} onClose={() => setSelected(null)} />}
+          {editing && <EditShipmentModal shipment={editing} onSave={handleEdit} onClose={() => setEditing(null)} />}
+          {deleting && <DeleteConfirmModal shipment={deleting} onConfirm={handleDelete} onClose={() => setDeleting(null)} />}
         </main>
       </div>
     </>

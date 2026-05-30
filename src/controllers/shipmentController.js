@@ -16,7 +16,6 @@ const getPrediction = async (shipment) => {
     })
     return res.data
   } catch (err) {
-    console.log('ML prediction unavailable:', err.message)
     return null
   }
 }
@@ -29,12 +28,8 @@ const createShipment = async (req, res) => {
   try {
     const rawTracking = await addTracking(tracking_number, carrier)
     const normalized = normalizeTracking(rawTracking)
-
-    // Get ML prediction
     const prediction = await getPrediction({ origin, destination, carrier })
     const predicted_delay_days = prediction ? prediction.predicted_delay_days : 0
-    const prediction_reasons = prediction ? prediction.reasons : []
-
     const result = await db.query(
       `INSERT INTO shipments (tracking_number, carrier, description, origin, destination, status, eta, predicted_delay_days)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
@@ -42,23 +37,13 @@ const createShipment = async (req, res) => {
        normalized.status, normalized.eta, predicted_delay_days]
     )
     const shipment = result.rows[0]
-
     await db.query(
       `INSERT INTO shipment_events (shipment_id, status, raw_status, location, carrier_timestamp)
        VALUES ($1, $2, $3, $4, $5)`,
       [shipment.id, normalized.status, normalized.raw_status,
        normalized.location, normalized.carrier_timestamp]
     )
-
-    res.status(201).json({
-      success: true,
-      shipment,
-      prediction: prediction ? {
-        delay_days: predicted_delay_days,
-        confidence: prediction.confidence,
-        reasons: prediction_reasons
-      } : null
-    })
+    res.status(201).json({ success: true, shipment })
   } catch (err) {
     console.error('createShipment error:', err.message)
     res.status(500).json({ error: 'Failed to add shipment' })
@@ -70,7 +55,6 @@ const getShipments = async (req, res) => {
     const result = await db.query(`SELECT * FROM shipments ORDER BY created_at DESC`)
     res.json({ shipments: result.rows })
   } catch (err) {
-    console.error('getShipments error:', err.message)
     res.status(500).json({ error: 'Failed to fetch shipments' })
   }
 }
@@ -83,9 +67,44 @@ const getShipmentEvents = async (req, res) => {
     )
     res.json({ events: result.rows })
   } catch (err) {
-    console.error('getShipmentEvents error:', err.message)
     res.status(500).json({ error: 'Failed to fetch events' })
   }
 }
 
-module.exports = { createShipment, getShipments, getShipmentEvents }
+const updateShipment = async (req, res) => {
+  const { description, origin, destination, carrier, status } = req.body
+  try {
+    const result = await db.query(
+      `UPDATE shipments
+       SET description = COALESCE($1, description),
+           origin = COALESCE($2, origin),
+           destination = COALESCE($3, destination),
+           carrier = COALESCE($4, carrier),
+           status = COALESCE($5, status),
+           updated_at = NOW()
+       WHERE id = $6 RETURNING *`,
+      [description, origin, destination, carrier, status, req.params.id]
+    )
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Shipment not found' })
+    res.json({ success: true, shipment: result.rows[0] })
+  } catch (err) {
+    console.error('updateShipment error:', err.message)
+    res.status(500).json({ error: 'Failed to update shipment' })
+  }
+}
+
+const deleteShipment = async (req, res) => {
+  try {
+    const result = await db.query(
+      `DELETE FROM shipments WHERE id = $1 RETURNING *`,
+      [req.params.id]
+    )
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Shipment not found' })
+    res.json({ success: true, message: 'Shipment deleted' })
+  } catch (err) {
+    console.error('deleteShipment error:', err.message)
+    res.status(500).json({ error: 'Failed to delete shipment' })
+  }
+}
+
+module.exports = { createShipment, getShipments, getShipmentEvents, updateShipment, deleteShipment }

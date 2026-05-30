@@ -1,4 +1,5 @@
-
+import dynamic from 'next/dynamic'
+const RouteMap = dynamic(() => import('./RouteMap'), { ssr: false })
 export default function EventTimeline({ shipment, events, onClose }) {
   const delay = parseFloat(shipment.predicted_delay_days) || 0
   const delayColor = delay > 3 ? 'var(--red)' : delay > 1 ? 'var(--amber)' : 'var(--green)'
@@ -21,7 +22,7 @@ export default function EventTimeline({ shipment, events, onClose }) {
           <button onClick={onClose} style={{ background: 'var(--bg-3)', border: '1px solid var(--border-2)', color: 'var(--text-3)', cursor: 'pointer', width: 32, height: 32, borderRadius: 7, fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
         </div>
       </div>
-
+<RouteMap shipment={shipment} events={events} />
       {events.length === 0 ? (
         <p style={{ fontSize: 13, color: 'var(--text-4)' }}>No events recorded yet.</p>
       ) : (
